@@ -1,0 +1,69 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  ItemReadFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: ItemReadFunction
+      Handler: AWSServerless2::AWSServerless2.MyCRUDFunction::ReadAll
+      Runtime: dotnet6
+      Role: !GetAtt ItemReadRole.Arn
+
+  ItemReadRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: ItemReadRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: ItemReadPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                Resource: '*'
+
+  APIGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: MyAPIGateway
+
+  APIGatewayAuthorizer:
+    Type: AWS::ApiGateway::Authorizer
+    Properties:
+      Name: MyAuthorizer
+      Type: COGNITO_USER_POOLS
+      IdentitySource: method.request.header.Authorization
+      RestApiId: !Ref APIGateway
+      ProviderARNs:
+        - arn:aws:cognito-idp:us-east-1:861307554864:userpool/us-east-1_iA53JTFB5
+
+  APIGatewayItemsResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref APIGateway
+      ParentId: !GetAtt APIGateway.RootResourceId
+      PathPart: items
+
+  APIGatewayItemReadMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref APIGateway
+      ResourceId: !Ref APIGatewayItemsResource
+      HttpMethod: GET
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref APIGatewayAuthorizer
+      Integration:
+        Type: AWS
+        IntegrationResponses:
+          - StatusCode: 200
+        IntegrationHttpMethod: POST
+        Uri: !Sub >-
+          arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${ItemReadFunction.Arn}/invocations
+Outputs: {}

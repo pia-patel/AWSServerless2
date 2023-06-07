@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: 'AWS::Serverless-2016-10-31'
+Description: An AWS Serverless Application.
+Resources:
+  
+  CreateItemFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ''
+      Handler: AWSServerless2::AWSServerless2.MyCRUDFunction::Create
+      Runtime: dotnet6
+      Events:
+        CreateItem:
+          Type: Api
+          Properties:
+            Path: /items
+            Method: post
+  ReadAllItemFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ''
+      Handler: AWSServerless2::AWSServerless2.MyCRUDFunction::ReadAll
+      Runtime: dotnet6
+      Events:
+        CreateItem:
+          Type: Api
+          Properties:
+            Path: /items
+            Method: get
+            Auth:  
+  CreateUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ''
+      Handler: AWSServerless2::AWSServerless2.UserFunction::CreateUser
+      Runtime: dotnet6
+      Events:
+        CreateItem:
+          Type: Api
+          Properties:
+            Path: /users
+            Method: post
+  ReadUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ''
+      Handler: AWSServerless2::AWSServerless2.UserFunction::ReadAllUsers
+      Runtime: dotnet6
+      Events:
+        CreateItem:
+          Type: Api
+          Properties:
+            Path: /users
+            Method: get
+
+Outputs: {}

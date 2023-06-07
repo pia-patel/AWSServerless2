@@ -1,0 +1,38 @@
+service: myService 
+provider:
+  stackName: demo-app-stack
+  name: aws
+  runtime: dotnet6
+  stage: ${opt:stage, 'dev'}
+  region: us-east-1
+
+  environment:
+    stage: ${self.provide.stage}
+    COGNITO_USERPOOL_ID: us-east-1_iA53JTFB5
+    AWS_INSTANCE_REGION: ${self.provide.region}
+
+  deploymentBucket:
+    name: 'lambda-demo-first'
+    blockPublicAccess: true
+    serverSideEncryption: AES256
+
+custom:
+  version: v1
+  rootAuthorizer:
+    type: COGNITO_USER_POOLS
+    authorizerId: b5vzz1
+
+functions:
+  CreateItemFunction:
+    name: ${self:provider.stage}-create-item
+    handler: AWSServerless2::AWSServerless2.MyCRUDFunction::ReadAll
+    description: CRUD operations for item
+    timeout: 30
+    events:
+      - http:
+          path: items
+          method: get
+          cors: true
+          authorizer: ${self:custom.rootAuthorizer}
+  
+
